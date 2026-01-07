@@ -71,7 +71,7 @@ func preview(path string, width int) string {
 func (m Model) View() string {
 	return lg.JoinVertical(
 		lg.Center,
-		lg.NewStyle().Width(m.width).PaddingLeft(1).PaddingRight(1).Background(theme.ColorSecondary).Render(m.path+strconv.Itoa(m.width)),
+		lg.NewStyle().Width(m.width).PaddingLeft(1).PaddingRight(1).Background(theme.ColorSecondary).Render(m.path),
 		m.viewport.View(),
 	)
 }
@@ -91,7 +91,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			// we can initialize the viewport. The initial dimensions come in
 			// quickly, though asynchronously, which is why we wait for them
 			// here.
-			m.viewport = viewport.New(m.width, m.height-2)
+			m.viewport = viewport.New(m.width, m.height-1)
 			m.viewport.YPosition = 0
 			m.viewport.SetContent("")
 			m.ready = true

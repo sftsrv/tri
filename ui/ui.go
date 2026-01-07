@@ -46,7 +46,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.window.updateWindowSize(msg.Width, msg.Height)
-		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.25) - 1)
+		m.pathPicker = m.pathPicker.Height(msg.Height).Width(int(float32(msg.Width)*0.25) - 1)
 		m.preview, cmd = m.preview.Height(msg.Height).Width(int(float32(msg.Width)+0.75) - 1).Update(msg)
 		return m, cmd
 
@@ -82,16 +82,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
 			return m, nil
 		}
+	case tea.MouseEvent:
+	case tea.MouseAction:
+	case tea.MouseMsg:
+		m.preview, cmd = m.preview.Update(msg)
+		return m, cmd
 
 	}
 
-	preview, previewCmd := m.preview.Update(msg)
-	m.preview = preview
-
-	pathPicker, pickerCmd := m.pathPicker.Update(msg)
-	m.pathPicker = pathPicker
-
-	return m, tea.Batch(previewCmd, pickerCmd)
+	m.pathPicker, cmd = m.pathPicker.Update(msg)
+	return m, cmd
 }
 
 func (m Model) View() string {

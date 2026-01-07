@@ -35,12 +35,12 @@ func (m Model[I]) Items(items []I) Model[I] {
 
 // The height of the picker is header + count == 1 + count
 func (m Model[I]) GetHeight() int {
-	return 1 + m.count
+	return 2 + m.count
 }
 
 // The count depends on how much space we have
 func (m Model[I]) Height(height int) Model[I] {
-	m.count = height - 1
+	m.count = height - 2
 	return m.applyFilter()
 }
 
@@ -94,13 +94,14 @@ func (m Model[I]) View() string {
 	header := lg.JoinVertical(lg.Left,
 		theme.
 			Heading.
+			Width(m.width).
 			Background(m.accent).
 			Render(m.title+" "+count),
 		theme.Faded.MarginLeft(1).Render(fallback),
 	)
 
 	if m.searching {
-		header = lg.JoinVertical(lg.Left, theme.Heading.Background(m.accent).Render("Search "+count), m.search+"_")
+		header = lg.JoinVertical(lg.Left, theme.Heading.Width(m.width).Background(m.accent).Render("Search "+count), m.search+"_")
 	}
 
 	cursor, items := m.cursorWindow()
