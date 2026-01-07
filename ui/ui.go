@@ -25,7 +25,7 @@ type Model struct {
 	tree *tree.Tree
 
 	hovered    tree.Item
-	path       string
+	selected   tree.Item
 	pathPicker picker.Model[tree.Item]
 
 	preview preview.Model
@@ -51,7 +51,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	case picker.SelectedMsg[tree.Item]:
-		// handle selection
+		m.selected = msg.Selected
+		return m, tea.Quit
 
 	case picker.HoverMsg[tree.Item]:
 		m.hovered = msg.Hovered
@@ -68,9 +69,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch str {
 		case "ctrl+c":
 			return m, tea.Quit
-
-		case "enter":
-			// enter pressed, exit with selection
 
 		case "left":
 			m.hovered.Collapse()
@@ -115,8 +113,11 @@ func Run(f *tree.Tree) {
 		tea.WithMouseCellMotion(),
 	)
 
-	if _, err := p.Run(); err != nil {
+	result, err := p.Run()
+	if err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
+
+	fmt.Println(result.(Model).selected.GetPath())
 }
