@@ -50,6 +50,11 @@ func (m Model[I]) Search(search string) Model[I] {
 	return m.applyFilter()
 }
 
+func (m Model[I]) Searching(searching bool) Model[I] {
+	m.searching = searching
+	return m.applyFilter()
+}
+
 func (m Model[I]) Accent(accent lg.Color) Model[I] {
 	m.accent = accent
 	return m
@@ -144,7 +149,7 @@ func (m Model[I]) applyFilter() Model[I] {
 
 	itemSource := ItemSource[I]{m.items}
 
-	matches := fuzzy.FindFrom(m.search, itemSource)
+	matches := fuzzy.FindFromNoSort(m.search, itemSource)
 
 	m.filtered = []I{}
 	for _, match := range matches {
@@ -178,9 +183,21 @@ type SelectedMsg[I Item] struct {
 	Selected I
 }
 
+type HoverMsg[I Item] struct {
+	Hovered I
+}
+
 func (m Model[I]) selectedMsg() tea.Cmd {
 	return func() tea.Msg {
 		return SelectedMsg[I]{
+			m.filtered[m.cursor],
+		}
+	}
+}
+
+func (m Model[I]) hoverMsg() tea.Cmd {
+	return func() tea.Msg {
+		return HoverMsg[I]{
 			m.filtered[m.cursor],
 		}
 	}
@@ -245,7 +262,7 @@ func (m Model[I]) Update(msg tea.Msg) (Model[I], tea.Cmd) {
 		}
 	}
 
-	return m, nil
+	return m, m.hoverMsg()
 }
 
 func clamp(i int, min int, max int) int {

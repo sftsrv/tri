@@ -8,17 +8,69 @@ import (
 
 type Parts = []string
 
-type Tree struct {
-	Children map[string]Tree
+type kind int
+
+const (
+	file kind = iota
+	folder
+)
+
+type Item struct {
+	level int
+	name  string
+	kind  kind
+	tree  *Tree
 }
 
-func newTree() Tree {
+const ICON_FILE = "\uea7b"
+const ICON_FOLDER_CLOSED = "\uea83"
+const ICON_FOLDER_OPEN = "\uf07c"
+const INDENT = "  "
+
+func (s *Item) Expand() {
+	s.tree.Expanded = true
+}
+
+func (s *Item) Collapse() {
+	s.tree.Expanded = false
+}
+
+func (s Item) icon() string {
+	if s.kind == file {
+		return ICON_FILE
+	}
+
+	if s.tree.Expanded {
+		return ICON_FOLDER_OPEN
+	}
+
+	return ICON_FOLDER_CLOSED
+}
+
+func (s Item) Render() string {
+	return fmt.Sprintf("%s %s %s", strings.Repeat(INDENT, s.level), s.icon(), s.name)
+}
+
+func (s Item) Search() string {
+	tags := append(s.tree.Parts, s.name)
+	return strings.Join(tags, " ")
+}
+
+type Tree struct {
+	Expanded bool
+	Parts    Parts
+	Children map[string]*Tree
+}
+
+func newTree(parts Parts) Tree {
 	return Tree{
-		Children: map[string]Tree{},
+		Expanded: false,
+		Parts:    parts,
+		Children: map[string]*Tree{},
 	}
 }
 
-func partsToTreeRec(paths []Parts, depth int) Tree {
+func partsToTreeRec(current Parts, paths []Parts, depth int) *Tree {
 	subtrees := map[string][]Parts{}
 
 	for _, parts := range paths {
@@ -28,12 +80,13 @@ func partsToTreeRec(paths []Parts, depth int) Tree {
 		}
 	}
 
-	tree := newTree()
+	tree := newTree(current)
 	for label, nodes := range subtrees {
-		tree.Children[label] = partsToTreeRec(nodes, depth+1)
+		tree.Children[label] = partsToTreeRec(
+			append(current, label), nodes, depth+1)
 	}
 
-	return tree
+	return &tree
 }
 
 func pathsToParts(paths []string) []Parts {
@@ -48,14 +101,10 @@ func pathsToParts(paths []string) []Parts {
 	return result
 }
 
-func PathsToTree(paths []string) Tree {
+func PathsToTree(paths []string) *Tree {
 	parts := pathsToParts(paths)
-	return partsToTreeRec(parts, 0)
+	return partsToTreeRec(Parts{}, parts, 0)
 }
-
-const ICON_FILE = "\uea7b"
-const ICON_FOLDER = "\uea83"
-const INDENT = "    "
 
 func sortedKeys[T any](items map[string]T) []string {
 	keys := []string{}
@@ -69,30 +118,37 @@ func sortedKeys[T any](items map[string]T) []string {
 	return keys
 }
 
-func printTreeRec(tree Tree, offset int) []string {
-	indent := strings.Repeat(INDENT, offset)
-
+func toItemsRec(tree *Tree, level int) []Item {
 	roots := sortedKeys(tree.Children)
 
-	lines := []string{}
+	lines := []Item{}
 	for _, root := range roots {
 		children := tree.Children[root]
 
-		icon := ICON_FILE
+		kind := file
 		if len(children.Children) > 0 {
-			icon = ICON_FOLDER
+			kind = folder
 		}
 
-		line := fmt.Sprintf("%s%s %s", indent, icon, root)
-		lines = append(lines, line)
+		item := Item{
+			level: level,
+			name:  root,
+			kind:  kind,
+			tree:  children,
+		}
 
-		childLines := printTreeRec(children, offset+1)
-		lines = append(lines, childLines...)
+		lines = append(lines, item)
+
+		if item.tree.Expanded {
+			childLines := toItemsRec(children, level+1)
+			lines = append(lines, childLines...)
+		}
+
 	}
 
 	return lines
 }
 
-func RenderTree(tree Tree) []string {
-	return printTreeRec(tree, 0)
+func ToItems(tree *Tree) []Item {
+	return toItemsRec(tree, 0)
 }

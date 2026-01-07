@@ -2,13 +2,11 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 
 	"github.com/sftsrv/tri/tree"
+	"github.com/sftsrv/tri/ui"
 )
-
-type Parts = []string
 
 func main() {
 	paths := []string{}
@@ -22,10 +20,7 @@ func main() {
 		panic("Expected to be called with a list of paths from stdin")
 	}
 
-	items := tree.PathsToTree(paths)
-	lines := tree.RenderTree(items)
+	t := tree.PathsToTree(paths)
 
-	for _, line := range lines {
-		fmt.Println(line)
-	}
+	ui.Run(t)
 }

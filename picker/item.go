@@ -1,7 +1,8 @@
 package picker
 
 type Item interface {
-	Title() string
+	Render() string
+	Search() string
 }
 
 type ItemSource[I Item] struct {
@@ -13,14 +14,14 @@ func (s ItemSource[I]) Len() int {
 }
 
 func (s ItemSource[I]) String(i int) string {
-	return s.items[i].Title()
+	return s.items[i].Search()
 }
 
 func getTitles[I Item](items []I) []string {
 	strs := []string{}
 
 	for _, i := range items {
-		strs = append(strs, i.Title())
+		strs = append(strs, i.Render())
 	}
 
 	return strs
