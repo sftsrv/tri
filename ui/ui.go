@@ -5,7 +5,9 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 	"github.com/sftsrv/tri/picker"
+	"github.com/sftsrv/tri/preview"
 	"github.com/sftsrv/tri/theme"
 	"github.com/sftsrv/tri/tree"
 )
@@ -25,6 +27,8 @@ type Model struct {
 	hovered    tree.Item
 	path       string
 	pathPicker picker.Model[tree.Item]
+
+	preview preview.Model
 }
 
 func (m Model) Init() tea.Cmd {
@@ -42,14 +46,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.window.updateWindowSize(msg.Width, msg.Height)
-		m.pathPicker = m.pathPicker.Height(msg.Height - 1)
-		return m, nil
+		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.25) - 1)
+		m.preview, cmd = m.preview.Height(msg.Height).Width(int(float32(msg.Width)+0.75) - 1).Update(msg)
+		return m, cmd
 
 	case picker.SelectedMsg[tree.Item]:
 		// handle selection
 
 	case picker.HoverMsg[tree.Item]:
 		m.hovered = msg.Hovered
+
+		if msg.Hovered.IsFile() {
+			m.preview = m.preview.SetPath(msg.Hovered.GetPath())
+		}
+
 		return m, nil
 
 	case tea.KeyMsg:
@@ -73,17 +83,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		m.pathPicker, cmd = m.pathPicker.Update(msg)
-
-		return m, cmd
-
 	}
 
-	return m, nil
+	preview, previewCmd := m.preview.Update(msg)
+	m.preview = preview
+
+	pathPicker, pickerCmd := m.pathPicker.Update(msg)
+	m.pathPicker = pathPicker
+
+	return m, tea.Batch(previewCmd, pickerCmd)
 }
 
 func (m Model) View() string {
-	return m.pathPicker.View()
+	return lg.JoinHorizontal(lg.Top, m.pathPicker.View(), m.preview.View())
 }
 
 func initialModel(f *tree.Tree) Model {
@@ -92,12 +104,16 @@ func initialModel(f *tree.Tree) Model {
 	return Model{
 		tree:       f,
 		pathPicker: picker.New[tree.Item]().Title("Items").Accent(theme.ColorPrimary).Items(items).Searching(true),
+		preview:    preview.New(),
 	}
 }
 
 func Run(f *tree.Tree) {
 	m := initialModel(f)
-	p := tea.NewProgram(m)
+	p := tea.NewProgram(m,
+		tea.WithAltScreen(),
+		tea.WithMouseCellMotion(),
+	)
 
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)

@@ -18,6 +18,7 @@ type Model[I Item] struct {
 	count     int
 	items     []I
 	filtered  []I
+	width     int
 }
 
 func New[I Item]() Model[I] {
@@ -41,6 +42,11 @@ func (m Model[I]) GetHeight() int {
 func (m Model[I]) Height(height int) Model[I] {
 	m.count = height - 1
 	return m.applyFilter()
+}
+
+func (m Model[I]) Width(width int) Model[I] {
+	m.width = width
+	return m
 }
 
 // if the search is changed externally then filters need to be re-applied
@@ -70,10 +76,10 @@ func (_ Model[I]) Init() tea.Cmd {
 
 func indicator(accent lg.Color, selected bool, title string) string {
 	if !selected {
-		return lg.NewStyle().PaddingRight(2).Render("") + title
+		return lg.NewStyle().PaddingRight(1).Render("") + title
 	}
 
-	return lg.NewStyle().PaddingRight(1).Foreground(accent).Render("→") +
+	return lg.NewStyle().PaddingRight(0).Foreground(accent).Render("→") +
 		lg.NewStyle().Foreground(accent).Bold(true).Render(title)
 }
 
@@ -85,14 +91,16 @@ func (m Model[I]) View() string {
 		fallback = m.search
 	}
 
-	header := theme.
-		Heading.
-		Background(m.accent).
-		Render(m.title+" "+count) +
-		theme.Faded.MarginLeft(1).Render(fallback)
+	header := lg.JoinVertical(lg.Left,
+		theme.
+			Heading.
+			Background(m.accent).
+			Render(m.title+" "+count),
+		theme.Faded.MarginLeft(1).Render(fallback),
+	)
 
 	if m.searching {
-		header = theme.Heading.Background(m.accent).Render("Search "+count) + " " + m.search + "_"
+		header = lg.JoinVertical(lg.Left, theme.Heading.Background(m.accent).Render("Search "+count), m.search+"_")
 	}
 
 	cursor, items := m.cursorWindow()
@@ -106,11 +114,11 @@ func (m Model[I]) View() string {
 		content = append(content, theme.Faded.Render("no more items"))
 	}
 
-	return lg.JoinVertical(
+	return lg.NewStyle().Width(m.width).Render(lg.JoinVertical(
 		lg.Top,
 		header,
 		lg.NewStyle().BorderLeft(true).BorderForeground(m.accent).BorderStyle(lg.NormalBorder()).Render(lg.JoinVertical(lg.Top, content...)),
-	)
+	))
 }
 
 // Gets the cursor position in a relative window with one item padding if possible.
@@ -178,6 +186,10 @@ type HoverMsg[I Item] struct {
 }
 
 func (m Model[I]) selectedMsg() tea.Cmd {
+	if m.cursor >= len(m.filtered) {
+		return nil
+	}
+
 	return func() tea.Msg {
 		return SelectedMsg[I]{
 			m.filtered[m.cursor],
