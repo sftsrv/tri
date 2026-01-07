@@ -29,8 +29,7 @@ func New[I Item]() Model[I] {
 
 func (m Model[I]) Items(items []I) Model[I] {
 	m.items = items
-	m.filtered = items
-	return m
+	return m.applyFilter()
 }
 
 // The height of the picker is header + count == 1 + count
@@ -139,9 +138,6 @@ func (m Model[I]) cursorWindow() (int, []string) {
 }
 
 func (m Model[I]) applyFilter() Model[I] {
-	// Must reset the cursor since we're modifying the underlying list
-	m.cursor = 0
-
 	if m.search == "" {
 		m.filtered = m.items
 		return m
@@ -173,12 +169,6 @@ func (m Model[I]) cursorDown() Model[I] {
 	return m
 }
 
-func (m Model[I]) clearSearch() Model[I] {
-	m.searching = false
-	m.search = ""
-	return m
-}
-
 type SelectedMsg[I Item] struct {
 	Selected I
 }
@@ -196,6 +186,10 @@ func (m Model[I]) selectedMsg() tea.Cmd {
 }
 
 func (m Model[I]) hoverMsg() tea.Cmd {
+	if m.cursor >= len(m.filtered) {
+		return nil
+	}
+
 	return func() tea.Msg {
 		return HoverMsg[I]{
 			m.filtered[m.cursor],
@@ -204,8 +198,6 @@ func (m Model[I]) hoverMsg() tea.Cmd {
 }
 
 func (m Model[I]) Update(msg tea.Msg) (Model[I], tea.Cmd) {
-	maxIndex := max(len(m.filtered)-1, 0)
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		str := msg.String()
@@ -238,12 +230,6 @@ func (m Model[I]) Update(msg tea.Msg) (Model[I], tea.Cmd) {
 			}
 		} else {
 			switch str {
-			case "left", "h":
-				m.cursor = 0
-
-			case "right", "l":
-				m.cursor = maxIndex
-
 			case "up", "k":
 				m = m.cursorUp()
 

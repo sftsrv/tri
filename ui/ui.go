@@ -37,6 +37,8 @@ func (w *window) updateWindowSize(width int, height int) {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.window.updateWindowSize(msg.Width, msg.Height)
@@ -62,16 +64,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "left":
 			m.hovered.Collapse()
-			m.pathPicker = m.pathPicker.Items(tree.ToItems(m.tree))
-			return m, nil
+			m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
+			return m, cmd
 
 		case "right":
 			m.hovered.Expand()
-			m.pathPicker = m.pathPicker.Items(tree.ToItems(m.tree))
+			m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
 			return m, nil
 		}
 
-		var cmd tea.Cmd
 		m.pathPicker, cmd = m.pathPicker.Update(msg)
 
 		return m, cmd

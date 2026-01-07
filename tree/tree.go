@@ -52,14 +52,24 @@ func (s Item) Render() string {
 }
 
 func (s Item) Search() string {
-	tags := append(s.tree.Parts, s.name)
-	return strings.Join(tags, " ")
+	return strings.Join(s.tree.Search(), " ")
 }
 
 type Tree struct {
 	Expanded bool
 	Parts    Parts
 	Children map[string]*Tree
+}
+
+func (t *Tree) Search() []string {
+	tags := t.Parts
+
+	for child, subtree := range t.Children {
+		tags = append(tags, child)
+		tags = append(tags, subtree.Search()...)
+	}
+
+	return tags
 }
 
 func newTree(parts Parts) Tree {
