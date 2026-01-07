@@ -24,9 +24,9 @@ type Model struct {
 
 	tree *tree.Tree
 
-	hovered    tree.Item
-	selected   tree.Item
-	pathPicker picker.Model[tree.Item]
+	hovered    *tree.Item
+	selected   *tree.Item
+	pathPicker picker.Model[*tree.Item]
 
 	preview preview.Model
 }
@@ -50,11 +50,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.preview, cmd = m.preview.Height(msg.Height).Width(int(float32(msg.Width)+0.75) - 1).Update(msg)
 		return m, cmd
 
-	case picker.SelectedMsg[tree.Item]:
+	case picker.SelectedMsg[*tree.Item]:
 		m.selected = msg.Selected
 		return m, tea.Quit
 
-	case picker.HoverMsg[tree.Item]:
+	case picker.HoverMsg[*tree.Item]:
 		m.hovered = msg.Hovered
 
 		if msg.Hovered.IsFile() {
@@ -101,7 +101,7 @@ func initialModel(f *tree.Tree) Model {
 
 	return Model{
 		tree:       f,
-		pathPicker: picker.New[tree.Item]().Title("Items").Accent(theme.ColorPrimary).Items(items).Searching(true),
+		pathPicker: picker.New[*tree.Item]().Title("Items").Accent(theme.ColorPrimary).Items(items).Searching(true),
 		preview:    preview.New(),
 	}
 }
@@ -119,5 +119,9 @@ func Run(f *tree.Tree) {
 		os.Exit(1)
 	}
 
-	fmt.Println(result.(Model).selected.GetPath())
+	selected := result.(Model).selected
+
+	if selected != nil {
+		fmt.Println(result.(Model).selected.GetPath())
+	}
 }

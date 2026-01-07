@@ -137,10 +137,10 @@ func sortedKeys[T any](items map[string]T) []string {
 	return keys
 }
 
-func toItemsRec(tree *Tree, level int) []Item {
+func toItemsRec(tree *Tree, level int) []*Item {
 	roots := sortedKeys(tree.Children)
 
-	lines := []Item{}
+	lines := []*Item{}
 	for _, root := range roots {
 		children := tree.Children[root]
 
@@ -149,7 +149,7 @@ func toItemsRec(tree *Tree, level int) []Item {
 			kind = folder
 		}
 
-		item := Item{
+		item := &Item{
 			level: level,
 			name:  root,
 			kind:  kind,
@@ -168,6 +168,6 @@ func toItemsRec(tree *Tree, level int) []Item {
 	return lines
 }
 
-func ToItems(tree *Tree) []Item {
+func ToItems(tree *Tree) []*Item {
 	return toItemsRec(tree, 0)
 }
