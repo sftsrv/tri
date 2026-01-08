@@ -81,7 +81,7 @@ func (_ Model[I]) Init() tea.Cmd {
 func truncate(str string, width int) string {
 	return lg.NewStyle().
 		MaxHeight(1).
-		Width(width).
+		MaxWidth(width).
 		Render(str)
 }
 

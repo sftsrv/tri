@@ -153,7 +153,11 @@ func initialModel(f *tree.Tree, previewCmd string) Model {
 	}
 }
 
-func Run(f *tree.Tree, previewCmd string) {
+func Run(f *tree.Tree, previewCmd string, flat bool) {
+	if flat {
+		f.Flatten()
+	}
+
 	m := initialModel(f, previewCmd)
 	p := tea.NewProgram(m,
 		tea.WithAltScreen(),

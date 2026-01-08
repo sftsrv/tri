@@ -32,6 +32,6 @@ git diff --name-only | tri --preview "git diff HEAD --"
 - [x] Custom preview command
 - [x] File selection
 - [x] Expand/Collapse folders
+- [x] Flatten direct paths (added behind the `--flat` flag)
 - [ ] Fix fuzzy searching
 - [ ] Multi file select?
-- [ ] Collapse multi directory direct paths

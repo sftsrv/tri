@@ -78,6 +78,25 @@ func (s Item) icon() string {
 	return ICON_FOLDER_CLOSED
 }
 
+func (t *Tree) Flatten() {
+	for childKey, child := range t.Children {
+		child.Flatten()
+		if len(child.Children) != 1 {
+			continue
+		}
+
+		grandChildKey := sortedKeys(child.Children)[0]
+		grandChild := child.Children[grandChildKey]
+		grandChild.Flatten()
+
+		t.Parts = grandChild.Parts
+		t.Children[strings.Join(grandChild.Parts, "/")] = grandChild
+
+		delete(child.Children, grandChildKey)
+		delete(t.Children, childKey)
+	}
+}
+
 func (s Item) Render() string {
 	return fmt.Sprintf("%s %s %s", strings.Repeat(INDENT, s.level), s.icon(), s.name)
 }

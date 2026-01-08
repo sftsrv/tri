@@ -27,6 +27,7 @@ $ git diff --name-only | tri
 
 func main() {
 	help := flag.Bool("help", false, "show help menu")
+	flat := flag.Bool("flat", false, "flatten direct paths")
 	preview := flag.String("preview", "", "command to use for file preview")
 
 	flag.Parse()
@@ -50,5 +51,5 @@ func main() {
 
 	t := tree.PathsToTree(paths)
 
-	ui.Run(t, *preview)
+	ui.Run(t, *preview, *flat)
 }
