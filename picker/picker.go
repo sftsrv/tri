@@ -2,10 +2,10 @@ package picker
 
 import (
 	"fmt"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
-	"github.com/sahilm/fuzzy"
 	"github.com/sftsrv/tri/theme"
 )
 
@@ -78,13 +78,22 @@ func (_ Model[I]) Init() tea.Cmd {
 	return nil
 }
 
+func truncate(str string, width int) string {
+	return lg.NewStyle().
+		MaxHeight(1).
+		Width(width).
+		Render(str)
+}
+
 func indicator(accent lg.Color, selected bool, title string) string {
 	if !selected {
 		return lg.NewStyle().PaddingRight(1).Render("") + title
 	}
 
-	return lg.NewStyle().PaddingRight(0).Foreground(accent).Render("→") +
-		lg.NewStyle().Foreground(accent).Bold(true).Render(title)
+	line := lg.JoinHorizontal(lg.Top, lg.NewStyle().PaddingRight(0).Foreground(accent).Render("→"),
+		lg.NewStyle().Foreground(accent).Bold(true).Render(title))
+
+	return line
 }
 
 func (m Model[I]) View() string {
@@ -112,7 +121,7 @@ func (m Model[I]) View() string {
 	content := []string{}
 
 	for i, item := range items {
-		content = append(content, indicator(m.accent, i == cursor, item))
+		content = append(content, truncate(indicator(m.accent, i == cursor, item), m.width-1))
 	}
 
 	if len(items) < m.count {
@@ -156,13 +165,12 @@ func (m Model[I]) applyFilter() Model[I] {
 		return m
 	}
 
-	itemSource := ItemSource[I]{m.items}
-
-	matches := fuzzy.FindFromNoSort(m.search, itemSource)
-
+	// TODO: make this use fuzzy search again
 	m.filtered = []I{}
-	for _, match := range matches {
-		m.filtered = append(m.filtered, m.items[match.Index])
+	for _, item := range m.items {
+		if strings.Contains(item.Search(), m.search) {
+			m.filtered = append(m.filtered, item)
+		}
 	}
 
 	return m

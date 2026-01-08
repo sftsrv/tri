@@ -22,5 +22,7 @@ git diff --name-only | tri
 
 ## TODO ?
 
+- [ ] Fix fuzzy searching
 - [ ] Multi file select?
 - [ ] Custom preview command?
+- [ ] Collapse multi-dir direct paths

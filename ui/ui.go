@@ -47,7 +47,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.window.updateWindowSize(msg.Width, msg.Height)
 		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.25) - 1)
-		m.preview, cmd = m.preview.Height(msg.Height - 1).Width(int(float32(msg.Width)+0.75) - 1).Update(msg)
+		m.preview, cmd = m.preview.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.75) - 1).Update(msg)
 		return m, cmd
 
 	case picker.SelectedMsg[*tree.Item]:
@@ -85,14 +85,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "]":
-			m.tree.ExpandAll()
-			m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
-			return m, cmd
+			if !m.pathPicker.IsSearching() {
+				m.tree.ExpandAll()
+				m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
+				return m, cmd
+			}
 
 		case "[":
-			m.tree.CollapseAll()
-			m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
-			return m, cmd
+			if !m.pathPicker.IsSearching() {
+				m.tree.CollapseAll()
+				m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
+				return m, cmd
+			}
 		}
 
 	case tea.MouseMsg:
@@ -125,9 +129,8 @@ func helpView(m Model) string {
 		help += item("↓↑/jk", "navigate")
 		help += item("→/l", "expand")
 		help += item("←/h", "collapse")
+		help += item("]/[", "expand/collapse all")
 	}
-
-	help += item("]/[", "expand/collapse all")
 
 	return lg.NewStyle().Render(help)
 }
