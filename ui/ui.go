@@ -113,7 +113,7 @@ func helpView(m Model) string {
 	item := func(icon string, title string) string {
 		return lg.JoinHorizontal(
 			lg.Top,
-			theme.Active.MarginLeft(2).Render(icon),
+			theme.Secondary.MarginLeft(2).Render(icon),
 			theme.Faded.MarginRight(2).Render(" ", title),
 		)
 	}
@@ -143,18 +143,18 @@ func (m Model) View() string {
 	)
 }
 
-func initialModel(f *tree.Tree) Model {
+func initialModel(f *tree.Tree, previewCmd string) Model {
 	items := tree.ToItems(f)
 
 	return Model{
 		tree:       f,
 		pathPicker: picker.New[*tree.Item]().Title("Items").Accent(theme.ColorPrimary).Items(items),
-		preview:    preview.New(),
+		preview:    preview.New(previewCmd),
 	}
 }
 
-func Run(f *tree.Tree) {
-	m := initialModel(f)
+func Run(f *tree.Tree, previewCmd string) {
+	m := initialModel(f, previewCmd)
 	p := tea.NewProgram(m,
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),

@@ -3,6 +3,7 @@ package preview
 import (
 	"os/exec"
 	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
@@ -11,6 +12,7 @@ import (
 )
 
 type Model struct {
+	cmd      string
 	path     string
 	ready    bool
 	width    int
@@ -18,14 +20,16 @@ type Model struct {
 	viewport viewport.Model
 }
 
-func New() Model {
-	return Model{}
+func New(cmd string) Model {
+	return Model{
+		cmd: cmd,
+	}
 }
 
 func (m Model) SetPath(path string) Model {
 	m.path = path
 
-	content := preview(path, m.width)
+	content := preview(m.cmd, path, m.width)
 	m.viewport.SetContent(content)
 	return m
 }
@@ -46,19 +50,31 @@ func (m Model) Height(height int) Model {
 	return m
 }
 
-func preview(path string, width int) string {
-	_, err := exec.LookPath("bat")
+func resolveCommand(command string, width int) (string, []string) {
+	command = strings.TrimSpace(command)
+	if len(command) > 0 {
+		parts := strings.Split(command, " ")
+		bin := parts[0]
+		args := parts[1:]
 
+		return bin, args
+	}
+
+	_, err := exec.LookPath("bat")
+	if err == nil {
+		return "bat", []string{"--color=always", "--number", "--terminal-width", strconv.Itoa(width)}
+	} else {
+		return "cat", []string{}
+	}
+}
+
+func preview(command string, path string, width int) string {
 	if path == "" {
 		return "No file selected"
 	}
 
-	var cmd *exec.Cmd
-	if err == nil {
-		cmd = exec.Command("bat", "--color=always", "--number", "--terminal-width", strconv.Itoa(width), path)
-	} else {
-		cmd = exec.Command("cat", path)
-	}
+	bin, args := resolveCommand(command, width)
+	cmd := exec.Command(bin, append(args, path)...)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -71,7 +87,12 @@ func preview(path string, width int) string {
 func (m Model) View() string {
 	return lg.JoinVertical(
 		lg.Center,
-		lg.NewStyle().Width(m.width).PaddingLeft(1).PaddingRight(1).Background(theme.ColorSecondary).Render(m.path),
+		lg.NewStyle().
+			Width(m.width).
+			PaddingLeft(1).
+			PaddingRight(1).
+			Background(theme.ColorSecondary).
+			Render(m.path),
 		m.viewport.View(),
 	)
 }

@@ -18,11 +18,18 @@ find ./ | tri
 
 # files changed in pr
 git diff --name-only | tri
+
+# using a custom previewer
+git diff --name-only | tri --preview "git diff HEAD --"
 ```
 
-## TODO ?
+## Features / TODOs
 
+- [x] Search
+- [x] Preview with syntax highlighting (using bat if available)
+- [x] Custom preview command
+- [x] File selection
+- [x] Expand/Collapse folders
 - [ ] Fix fuzzy searching
 - [ ] Multi file select?
-- [ ] Custom preview command?
-- [ ] Collapse multi-dir direct paths
+- [ ] Collapse multi directory direct paths
