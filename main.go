@@ -6,27 +6,24 @@ import (
 	"fmt"
 	"os"
 
-	lg "github.com/charmbracelet/lipgloss"
-	"github.com/sftsrv/tri/theme"
 	"github.com/sftsrv/tri/tree"
 	"github.com/sftsrv/tri/ui"
 )
 
-var usage = lg.JoinVertical(
-	lg.Left,
+var usage = `tri
 
-	theme.Primary.MarginBottom(1).Render("tri"),
-	"An interactive tree-based search tool with file preview. Give it some path-looking things, and it'll make them readable",
+An interactive tree-based search tool with file preview. Give it some path-looking things, and it'll make them readable
 
-	theme.Secondary.MarginBottom(1).MarginTop(1).Render("Usage"),
-	"Pipe in a list of `/` separated stuff, and it'll make them interactive:",
-	theme.Faded.MarginBottom(1).MarginTop(1).Render("# files in a directory"),
-	"$ find ./ | tri",
-	theme.Faded.MarginBottom(1).MarginTop(1).Render("# use alternate preview"),
-	"$ find ./ | tri --preview glow",
-	theme.Faded.MarginTop(1).Render("# files in a pr"),
-	lg.NewStyle().MarginBottom(1).Render("$ git diff --name-only | tri"),
-)
+Usage
+
+# files in a directory
+$ find ./ | tri
+# use alternate preview
+$ find ./ | tri --preview glow
+# files in a pr
+$ git diff --name-only | tri
+
+`
 
 func main() {
 	help := flag.Bool("help", false, "show help menu")
