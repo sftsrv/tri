@@ -46,8 +46,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.window.updateWindowSize(msg.Width, msg.Height)
-		m.pathPicker = m.pathPicker.Height(msg.Height).Width(int(float32(msg.Width)*0.25) - 1)
-		m.preview, cmd = m.preview.Height(msg.Height).Width(int(float32(msg.Width)+0.75) - 1).Update(msg)
+		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.25) - 1)
+		m.preview, cmd = m.preview.Height(msg.Height - 1).Width(int(float32(msg.Width)+0.75) - 1).Update(msg)
 		return m, cmd
 
 	case picker.SelectedMsg[*tree.Item]:
@@ -70,18 +70,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 
-		case "left":
-			m.hovered.Collapse()
+		case "left", "h":
+			if m.hovered != nil && (str == "left" || !m.pathPicker.IsSearching()) {
+				m.hovered.Collapse()
+				m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
+				return m, cmd
+			}
+
+		case "right", "l":
+			if m.hovered != nil && (str == "right" || !m.pathPicker.IsSearching()) {
+				m.hovered.Expand()
+				m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
+				return m, cmd
+			}
+
+		case "]":
+			m.tree.ExpandAll()
 			m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
 			return m, cmd
 
-		case "right":
-			m.hovered.Expand()
+		case "[":
+			m.tree.CollapseAll()
 			m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
-			return m, nil
+			return m, cmd
 		}
-	case tea.MouseEvent:
-	case tea.MouseAction:
+
 	case tea.MouseMsg:
 		m.preview, cmd = m.preview.Update(msg)
 		return m, cmd
@@ -92,8 +105,39 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func helpView(m Model) string {
+	item := func(icon string, title string) string {
+		return lg.JoinHorizontal(
+			lg.Top,
+			theme.Active.MarginLeft(2).Render(icon),
+			theme.Faded.MarginRight(2).Render(" ", title),
+		)
+	}
+
+	help := ""
+	if m.pathPicker.IsSearching() {
+		help += item("esc", "close search")
+		help += item("↓↑", "navigate")
+		help += item("→", "expand")
+		help += item("←", "collapse")
+	} else {
+		help += item("/", "search")
+		help += item("↓↑/jk", "navigate")
+		help += item("→/l", "expand")
+		help += item("←/h", "collapse")
+	}
+
+	help += item("]/[", "expand/collapse all")
+
+	return lg.NewStyle().Render(help)
+}
+
 func (m Model) View() string {
-	return lg.JoinHorizontal(lg.Top, m.pathPicker.View(), m.preview.View())
+	return lg.JoinVertical(
+		lg.Left,
+		lg.JoinHorizontal(lg.Top, m.pathPicker.View(), m.preview.View()),
+		helpView(m),
+	)
 }
 
 func initialModel(f *tree.Tree) Model {
@@ -101,7 +145,7 @@ func initialModel(f *tree.Tree) Model {
 
 	return Model{
 		tree:       f,
-		pathPicker: picker.New[*tree.Item]().Title("Items").Accent(theme.ColorPrimary).Items(items).Searching(true),
+		pathPicker: picker.New[*tree.Item]().Title("Items").Accent(theme.ColorPrimary).Items(items),
 		preview:    preview.New(),
 	}
 }

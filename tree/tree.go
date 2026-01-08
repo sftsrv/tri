@@ -32,8 +32,30 @@ func (s *Item) Expand() {
 	s.tree.Expanded = true
 }
 
+func (s *Item) ExpandAll() {
+	s.tree.ExpandAll()
+}
+
+func (t *Tree) ExpandAll() {
+	t.Expanded = true
+	for _, child := range t.Children {
+		child.ExpandAll()
+	}
+}
+
 func (s *Item) Collapse() {
 	s.tree.Expanded = false
+}
+
+func (s *Item) CollapseAll() {
+	s.tree.CollapseAll()
+}
+
+func (t *Tree) CollapseAll() {
+	t.Expanded = false
+	for _, child := range t.Children {
+		child.CollapseAll()
+	}
 }
 
 func (s Item) IsFile() bool {

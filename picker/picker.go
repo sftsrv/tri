@@ -60,6 +60,10 @@ func (m Model[I]) Searching(searching bool) Model[I] {
 	return m.applyFilter()
 }
 
+func (m Model[I]) IsSearching() bool {
+	return m.searching
+}
+
 func (m Model[I]) Accent(accent lg.Color) Model[I] {
 	m.accent = accent
 	return m
