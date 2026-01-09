@@ -123,7 +123,7 @@ func (t *Tree) Search() []string {
 func newTree(parts Parts) Tree {
 	return Tree{
 		Path:     strings.Join(parts, SEP),
-		Expanded: false,
+		Expanded: true,
 		Children: map[string]*Tree{},
 	}
 }
