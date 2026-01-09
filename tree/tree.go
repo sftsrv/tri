@@ -2,7 +2,6 @@ package tree
 
 import (
 	"fmt"
-	"path"
 	"slices"
 	"strings"
 )
@@ -64,7 +63,7 @@ func (s Item) IsFile() bool {
 }
 
 func (s Item) GetPath() string {
-	return path.Join(s.tree.Parts...)
+	return strings.Join(s.tree.Parts, SEP)
 }
 
 func (s Item) icon() string {
