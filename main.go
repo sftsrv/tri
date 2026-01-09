@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/sftsrv/tri/tree"
 	"github.com/sftsrv/tri/ui"
@@ -27,6 +28,7 @@ $ git diff --name-only | tri
 
 func main() {
 	help := flag.Bool("help", false, "show help menu")
+	print := flag.Bool("print", false, "print tree (non interactive)")
 	flat := flag.Bool("flat", false, "flatten direct paths")
 	preview := flag.String("preview", "", "command to use for file preview")
 
@@ -42,7 +44,8 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
-		paths = append(paths, scanner.Text())
+		line := strings.TrimSpace(scanner.Text())
+		paths = append(paths, line)
 	}
 
 	if len(paths) == 0 {
@@ -50,6 +53,15 @@ func main() {
 	}
 
 	t := tree.PathsToTree(paths)
+
+	if *print {
+		t.ExpandAll()
+		if *flat {
+			t.Flatten()
+		}
+		fmt.Println(tree.Render(t))
+		return
+	}
 
 	ui.Run(t, *preview, *flat)
 }

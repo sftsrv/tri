@@ -27,6 +27,7 @@ const ICON_FILE = "\uea7b"
 const ICON_FOLDER_CLOSED = "\uea83"
 const ICON_FOLDER_OPEN = "\uf07c"
 const INDENT = "  "
+const SEP = "/"
 
 func (s *Item) Expand() {
 	s.tree.Expanded = true
@@ -80,19 +81,19 @@ func (s Item) icon() string {
 
 func (t *Tree) Flatten() {
 	for childKey, child := range t.Children {
-		child.Flatten()
 		if len(child.Children) != 1 {
+			child.Flatten()
 			continue
 		}
 
-		grandChildKey := sortedKeys(child.Children)[0]
-		grandChild := child.Children[grandChildKey]
-		grandChild.Flatten()
+		for grandChildKey, grandChild := range child.Children {
+			grandChild.Flatten()
 
-		t.Parts = grandChild.Parts
-		t.Children[strings.Join(grandChild.Parts, "/")] = grandChild
+			newKey := strings.Join([]string{childKey, grandChildKey}, SEP)
+			t.Children[newKey] = grandChild
+			t.Parts = grandChild.Parts
+		}
 
-		delete(child.Children, grandChildKey)
 		delete(t.Children, childKey)
 	}
 }
@@ -136,7 +137,10 @@ func partsToTreeRec(current Parts, paths []Parts, depth int) *Tree {
 	for _, parts := range paths {
 		if len(parts) > depth {
 			segment := parts[depth]
-			subtrees[segment] = append(subtrees[segment], parts)
+			// depth == 0 handles cases where the tree starts with a SEP
+			if segment != "" || depth == 0 {
+				subtrees[segment] = append(subtrees[segment], parts)
+			}
 		}
 	}
 
@@ -155,7 +159,7 @@ func pathsToParts(paths []string) []Parts {
 	result := [][]string{}
 
 	for _, path := range paths {
-		result = append(result, strings.Split(path, "/"))
+		result = append(result, strings.Split(path, SEP))
 	}
 
 	return result
@@ -211,4 +215,15 @@ func toItemsRec(tree *Tree, level int) []*Item {
 
 func ToItems(tree *Tree) []*Item {
 	return toItemsRec(tree, 0)
+}
+
+func Render(tree *Tree) string {
+	result := ""
+	items := ToItems(tree)
+
+	for _, item := range items {
+		result += item.Render() + "\n"
+	}
+
+	return result
 }
