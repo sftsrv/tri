@@ -36,4 +36,5 @@ git diff --name-only | tri --preview "git diff HEAD --"
 - [x] Print tree (using `--print` flag)
 - [ ] Tests for different formats and structures
 - [ ] Fix fuzzy searching
+- [ ] Flatten files during search in flat mode
 - [ ] Multi file select?
