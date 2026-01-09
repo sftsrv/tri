@@ -34,5 +34,6 @@ git diff --name-only | tri --preview "git diff HEAD --"
 - [x] Expand/Collapse folders
 - [x] Flatten direct paths (using `--flat` flag)
 - [x] Print tree (using `--print` flag)
+- [ ] Tests for different formats and structures
 - [ ] Fix fuzzy searching
 - [ ] Multi file select?
