@@ -87,11 +87,22 @@ func truncate(str string, width int) string {
 
 func indicator(accent lg.Color, selected bool, title string) string {
 	if !selected {
-		return lg.NewStyle().PaddingRight(1).Render("") + title
+		return lg.NewStyle().
+			PaddingRight(1).
+			Render("") + title
 	}
 
-	line := lg.JoinHorizontal(lg.Top, lg.NewStyle().PaddingRight(0).Foreground(accent).Render("→"),
-		lg.NewStyle().Foreground(accent).Bold(true).Render(title))
+	line := lg.JoinHorizontal(
+		lg.Top,
+		lg.NewStyle().
+			PaddingRight(0).
+			Foreground(accent).
+			Render("→"),
+		lg.NewStyle().
+			Foreground(accent).
+			Bold(true).
+			Render(title),
+	)
 
 	return line
 }
@@ -114,7 +125,13 @@ func (m Model[I]) View() string {
 	)
 
 	if m.searching {
-		header = lg.JoinVertical(lg.Left, theme.Heading.Width(m.width).Background(m.accent).Render("Search "+count), m.search+"_")
+		header = lg.JoinVertical(
+			lg.Left,
+			theme.Heading.Width(m.width).
+				Background(m.accent).
+				Render("Search "+count),
+			m.search+"_",
+		)
 	}
 
 	cursor, items := m.cursorWindow()
@@ -128,11 +145,18 @@ func (m Model[I]) View() string {
 		content = append(content, theme.Faded.Render("no more items"))
 	}
 
-	return lg.NewStyle().Width(m.width).Render(lg.JoinVertical(
-		lg.Top,
-		header,
-		lg.NewStyle().BorderLeft(true).BorderForeground(m.accent).BorderStyle(lg.NormalBorder()).Render(lg.JoinVertical(lg.Top, content...)),
-	))
+	return lg.NewStyle().
+		Width(m.width).
+		Render(
+			lg.JoinVertical(
+				lg.Top,
+				header,
+				lg.NewStyle().
+					BorderLeft(true).
+					BorderForeground(m.accent).
+					BorderStyle(lg.NormalBorder()).
+					Render(lg.JoinVertical(lg.Top, content...)),
+			))
 }
 
 // Gets the cursor position in a relative window with one item padding if possible.
