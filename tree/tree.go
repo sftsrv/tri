@@ -80,8 +80,8 @@ func (s *Item) icon() string {
 
 func (t *Tree) Flatten() {
 	for childKey, child := range t.Children {
+		child.Flatten()
 		if len(child.Children) != 1 {
-			child.Flatten()
 			continue
 		}
 
