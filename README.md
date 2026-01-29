@@ -34,6 +34,10 @@ git diff --name-only | tri --preview "git diff HEAD --"
 - [x] Expand/Collapse folders
 - [x] Flatten direct paths (using `--flat` flag)
 - [x] Print tree (using `--print` flag)
+- [ ] Make flat mode reactive to searching
+- [ ] Make it possible to toggle flat on and off
+- [ ] Use `Viewport` (https://github.com/charmbracelet/bubbles) with `reflow` (https://github.com/muesli/reflow) for imroved wrapping
+- [ ] Allow explicit placeholder for file name in output command (like `fzf --preview "cat {}"`)
 - [ ] Regex based search in editor and via flag
 - [ ] Tests for different formats and structures
 - [ ] Fix fuzzy searching
