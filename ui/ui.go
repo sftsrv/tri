@@ -58,9 +58,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.hovered = msg.Hovered
 
 		if msg.Hovered.IsFile() {
-			m.preview = m.preview.SetPath(msg.Hovered.GetPath())
+			preview, c := m.preview.SetPath(msg.Hovered.GetPath())
+			m.preview = preview
+
+			return m, c
 		}
 
+		return m, nil
+
+	case preview.PreviewResultMsg:
+		m.preview = m.preview.SetContent(msg)
 		return m, nil
 
 	case tea.KeyMsg:

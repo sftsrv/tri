@@ -17,6 +17,7 @@ type Model struct {
 	ready    bool
 	width    int
 	height   int
+	active   *exec.Cmd
 	viewport viewport.Model
 }
 
@@ -26,11 +27,22 @@ func New(cmd string) Model {
 	}
 }
 
-func (m Model) SetPath(path string) Model {
+func (m Model) SetPath(path string) (Model, tea.Cmd) {
 	m.path = path
 
-	content := preview(m.cmd, path, m.width)
-	m.viewport.SetContent(content)
+	if m.active != nil && m.active.Process != nil {
+		m.active.Process.Kill()
+	}
+
+	m.viewport.SetContent("Loading Path: " + path)
+	active, cmd := preview(m.cmd, path, m.width)
+
+	m.active = active
+	return m, cmd
+}
+
+func (m Model) SetContent(preview PreviewResultMsg) Model {
+	m.viewport.SetContent(preview.content)
 	return m
 }
 
@@ -68,20 +80,28 @@ func resolveCommand(command string, width int) (string, []string) {
 	}
 }
 
-func preview(command string, path string, width int) string {
+type PreviewResultMsg struct {
+	content string
+}
+
+func preview(command string, path string, width int) (*exec.Cmd, tea.Cmd) {
 	if path == "" {
-		return "No file selected"
+		return nil, func() tea.Msg {
+			return PreviewResultMsg{"No file selected"}
+		}
 	}
 
 	bin, args := resolveCommand(command, width)
 	cmd := exec.Command(bin, append(args, path)...)
 
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "ERROR: " + string(output)
-	}
+	return cmd, func() tea.Msg {
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return PreviewResultMsg{"ERROR reading " + path + ":" + string(err.Error())}
+		}
 
-	return string(output)
+		return PreviewResultMsg{string(output)}
+	}
 }
 
 func (m Model) View() string {
