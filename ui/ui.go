@@ -66,6 +66,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, nil
 
+	case preview.PreviewReadyMsg:
+		hovered := m.hovered
+		if hovered != nil {
+			preview, c := m.preview.SetPath(hovered.GetPath())
+
+			m.preview = preview
+			return m, c
+		}
+
 	case preview.PreviewResultMsg:
 		m.preview = m.preview.SetContent(msg)
 		return m, nil

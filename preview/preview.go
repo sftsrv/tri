@@ -21,6 +21,14 @@ type Model struct {
 	viewport viewport.Model
 }
 
+type PreviewResultMsg struct {
+	path    string
+	isError bool
+	content string
+}
+
+type PreviewReadyMsg struct{}
+
 func New(cmd string) Model {
 	return Model{
 		cmd: cmd,
@@ -42,7 +50,10 @@ func (m Model) SetPath(path string) (Model, tea.Cmd) {
 }
 
 func (m Model) SetContent(preview PreviewResultMsg) Model {
-	m.viewport.SetContent(preview.content)
+	if m.path == preview.path {
+		m.viewport.SetContent(preview.content)
+	}
+
 	return m
 }
 
@@ -80,15 +91,9 @@ func resolveCommand(command string, width int) (string, []string) {
 	}
 }
 
-type PreviewResultMsg struct {
-	content string
-}
-
 func preview(command string, path string, width int) (*exec.Cmd, tea.Cmd) {
 	if path == "" {
-		return nil, func() tea.Msg {
-			return PreviewResultMsg{"No file selected"}
-		}
+		return nil, nil
 	}
 
 	bin, args := resolveCommand(command, width)
@@ -97,10 +102,10 @@ func preview(command string, path string, width int) (*exec.Cmd, tea.Cmd) {
 	return cmd, func() tea.Msg {
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			return PreviewResultMsg{"ERROR reading " + path + ":" + string(err.Error())}
+			return PreviewResultMsg{path, true, "ERROR reading " + path + ":" + string(err.Error())}
 		}
 
-		return PreviewResultMsg{string(output)}
+		return PreviewResultMsg{path, false, string(output)}
 	}
 }
 
@@ -136,6 +141,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 			m.viewport.YPosition = 0
 			m.viewport.SetContent("")
 			m.ready = true
+			readyCmd := func() tea.Msg {
+				return PreviewReadyMsg{}
+			}
+
+			cmds = append(cmds, readyCmd)
 		} else {
 			m.viewport.Width = m.width
 			m.viewport.Height = m.height

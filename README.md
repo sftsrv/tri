@@ -34,6 +34,7 @@ git diff --name-only | tri --preview "git diff HEAD --"
 - [x] Expand/Collapse folders
 - [x] Flatten direct paths (using `--flat` flag)
 - [x] Print tree (using `--print` flag)
+- [x] Async/non-blocking previews
 - [ ] Make flat mode reactive to searching
 - [ ] Make it possible to toggle flat on and off
 - [ ] Use `Viewport` (https://github.com/charmbracelet/bubbles) with `reflow` (https://github.com/muesli/reflow) for imroved wrapping
