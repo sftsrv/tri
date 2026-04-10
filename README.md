@@ -25,7 +25,9 @@ git diff --name-only | tri
 git diff --name-only | tri --preview "git diff HEAD --"
 ```
 
-## Features / TODOs
+## Features / Ideas / TODOs
+
+There are a lot of smaller improvements still left, but I've been using it for some time now and seems to work fine for me - but if you're keen to pick something up then do feel free to
 
 - [x] Search
 - [x] Preview with syntax highlighting (using bat if available)
@@ -38,10 +40,9 @@ git diff --name-only | tri --preview "git diff HEAD --"
 - [ ] Make splits adjustable via keybinding (resize width of file tree)
 - [ ] Make flat mode reactive to searching
 - [ ] Make it possible to toggle flat on and off
-- [ ] Use `Viewport` (https://github.com/charmbracelet/bubbles) with `reflow` (https://github.com/muesli/reflow) for imroved wrapping
 - [ ] Allow explicit placeholder for file name in output command (like `fzf --preview "cat {}"`)
-- [ ] Regex based search in editor and via flag
 - [ ] Tests for different formats and structures
 - [ ] Fix fuzzy searching
-- [ ] Flatten files during search in flat mode
+- [ ] Regex based search in editor and via flag?
 - [ ] Multi file select?
+- [ ] Use `Viewport` (https://github.com/charmbracelet/bubbles) with `reflow` (https://github.com/muesli/reflow) for improved wrapping? - better is being able to provide the size of the active terminal to the underlying process but I have no idea how to do that
