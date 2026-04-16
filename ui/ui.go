@@ -83,7 +83,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		str := msg.String()
 
 		switch str {
-		case "ctrl+c":
+		case "ctrl+c", "q":
 			return m, tea.Quit
 
 		case "left", "h":
@@ -140,12 +140,14 @@ func helpView(m Model) string {
 		help += item("↓↑", "navigate")
 		help += item("→", "expand")
 		help += item("←", "collapse")
+		help += item("ctrk+c", "quit")
 	} else {
 		help += item("/", "search")
 		help += item("↓↑/jk", "navigate")
 		help += item("→/l", "expand")
 		help += item("←/h", "collapse")
 		help += item("]/[", "expand/collapse all")
+		help += item("ctrk+c/q", "quit")
 	}
 
 	return lg.NewStyle().Render(help)
