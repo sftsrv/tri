@@ -37,6 +37,7 @@ There are a lot of smaller improvements still left, but I've been using it for s
 - [x] Flatten direct paths (using `--flat` flag)
 - [x] Print tree (using `--print` flag)
 - [x] Async/non-blocking previews
+- [ ] Move user search input to separate thread
 - [ ] Make splits adjustable via keybinding (resize width of file tree)
 - [ ] Make flat mode reactive to searching
 - [ ] Make it possible to toggle flat on and off
