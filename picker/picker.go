@@ -49,6 +49,10 @@ func (m Model[I]) Width(width int) Model[I] {
 	return m
 }
 
+func (m Model[I]) GetWidth() int {
+	return m.width
+}
+
 // if the search is changed externally then filters need to be re-applied
 func (m Model[I]) Search(search string) Model[I] {
 	m.search = search
@@ -222,6 +226,10 @@ type HoverMsg[I Item] struct {
 	Hovered I
 }
 
+type ResizeMsg struct {
+	Adjust int
+}
+
 func (m Model[I]) selectedMsg() tea.Cmd {
 	if m.cursor >= len(m.filtered) {
 		return nil
@@ -248,6 +256,9 @@ func (m Model[I]) hoverMsg() tea.Cmd {
 
 func (m Model[I]) Update(msg tea.Msg) (Model[I], tea.Cmd) {
 	switch msg := msg.(type) {
+	case ResizeMsg:
+		m.width += msg.Adjust
+
 	case tea.KeyMsg:
 		str := msg.String()
 		if m.searching {

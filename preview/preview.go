@@ -29,6 +29,10 @@ type PreviewResultMsg struct {
 
 type PreviewReadyMsg struct{}
 
+type ResizeMsg struct {
+	Adjust int
+}
+
 func New(cmd string) Model {
 	return Model{
 		cmd: cmd,
@@ -66,6 +70,10 @@ func (m Model) ClearPath() Model {
 func (m Model) Width(width int) Model {
 	m.width = width
 	return m
+}
+
+func (m Model) GetWidth() int {
+	return m.width
 }
 
 func (m Model) Height(height int) Model {
@@ -117,7 +125,7 @@ func (m Model) View() string {
 			PaddingLeft(1).
 			PaddingRight(1).
 			Background(theme.ColorSecondary).
-			Render(m.path),
+			Render(strconv.Itoa(m.width)+" "+m.path),
 		m.viewport.View(),
 	)
 }
@@ -128,7 +136,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 
-	switch msg.(type) {
+	switch msg := msg.(type) {
+
+	case ResizeMsg:
+		m.width += msg.Adjust
+		m.viewport.Width = m.width
 
 	case tea.WindowSizeMsg:
 		if !m.ready {

@@ -46,8 +46,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.window.updateWindowSize(msg.Width, msg.Height)
-		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.25) - 1)
-		m.preview, cmd = m.preview.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.75) - 1).Update(msg)
+
+		pickerWidth := int(float32(msg.Width)*0.25) - 1
+		previewWidth := int(float32(msg.Width)*0.75) - 1
+
+		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(pickerWidth)
+		m.preview, cmd = m.preview.Height(msg.Height - 1).Width(previewWidth).Update(msg)
 		return m, cmd
 
 	case picker.SelectedMsg[*tree.Item]:
@@ -113,6 +117,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
 				return m, cmd
 			}
+
+		case "{":
+			pathPicker, pathPickerCmd := m.pathPicker.Update(picker.ResizeMsg{Adjust: -1})
+			preview, previewCmd := m.preview.Update(preview.ResizeMsg{Adjust: +1})
+
+			m.pathPicker = pathPicker
+			m.preview = preview
+
+			return m, tea.Batch(pathPickerCmd, previewCmd)
+
+		case "}":
+			pathPicker, pathPickerCmd := m.pathPicker.Update(picker.ResizeMsg{Adjust: +1})
+			preview, previewCmd := m.preview.Update(preview.ResizeMsg{Adjust: -1})
+
+			m.pathPicker = pathPicker
+			m.preview = preview
+
+			return m, tea.Batch(pathPickerCmd, previewCmd)
 		}
 
 	case tea.MouseMsg:
@@ -147,6 +169,7 @@ func helpView(m Model) string {
 		help += item("→/l", "expand")
 		help += item("←/h", "collapse")
 		help += item("]/[", "expand/collapse all")
+		help += item("}/{", "resize")
 		help += item("ctrk+c/q", "quit")
 	}
 
