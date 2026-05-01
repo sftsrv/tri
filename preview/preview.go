@@ -68,6 +68,10 @@ func (m Model) Width(width int) Model {
 	return m
 }
 
+func (m Model) GetWidth() int {
+	return m.width
+}
+
 func (m Model) Height(height int) Model {
 	m.height = height
 	return m
@@ -117,7 +121,7 @@ func (m Model) View() string {
 			PaddingLeft(1).
 			PaddingRight(1).
 			Background(theme.ColorSecondary).
-			Render(m.path),
+			Render(strconv.Itoa(m.width)+" "+m.path),
 		m.viewport.View(),
 	)
 }

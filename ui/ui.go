@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
@@ -20,7 +21,8 @@ type window struct {
 type Path string
 
 type Model struct {
-	window window
+	window      window
+	splitAdjust int
 
 	tree *tree.Tree
 
@@ -40,14 +42,24 @@ func (w *window) updateWindowSize(width int, height int) {
 	w.height = height
 }
 
+func getWidths(full int, adjust int) (int, int) {
+	pickerWidth := int(float32(full)*0.25) - 1 + adjust
+	previewWidth := full - pickerWidth - adjust
+
+	return pickerWidth, previewWidth
+
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.window.updateWindowSize(msg.Width, msg.Height)
-		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.25) - 1)
-		m.preview, cmd = m.preview.Height(msg.Height - 1).Width(int(float32(msg.Width)*0.75) - 1).Update(msg)
+		pickerWidth, previewWidth := getWidths(msg.Width, m.splitAdjust)
+
+		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(pickerWidth)
+		m.preview, cmd = m.preview.Height(msg.Height - 1).Width(previewWidth).Update(msg)
 		return m, cmd
 
 	case picker.SelectedMsg[*tree.Item]:
@@ -113,6 +125,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.pathPicker, cmd = m.pathPicker.Items(tree.ToItems(m.tree)).Update(msg)
 				return m, cmd
 			}
+
+		case "{":
+			m.splitAdjust -= 1
+			pickerWidth, previewWidth := getWidths(m.window.width, m.splitAdjust)
+
+			m.pathPicker = m.pathPicker.Width(pickerWidth)
+			m.preview = m.preview.Width(previewWidth)
+
+			return m, cmd
+
+		case "}":
+			m.splitAdjust += 1
+			pickerWidth, previewWidth := getWidths(m.window.width, m.splitAdjust)
+
+			m.pathPicker = m.pathPicker.Width(pickerWidth)
+			m.preview = m.preview.Width(previewWidth)
+
+			return m, cmd
 		}
 
 	case tea.MouseMsg:
@@ -142,11 +172,13 @@ func helpView(m Model) string {
 		help += item("←", "collapse")
 		help += item("ctrk+c", "quit")
 	} else {
+		help += item("sizes", strconv.Itoa(m.window.width)+" "+strconv.Itoa(m.pathPicker.GetWidth())+" "+strconv.Itoa(m.preview.GetWidth()))
 		help += item("/", "search")
 		help += item("↓↑/jk", "navigate")
 		help += item("→/l", "expand")
 		help += item("←/h", "collapse")
 		help += item("]/[", "expand/collapse all")
+		help += item("}/{", "resize")
 		help += item("ctrk+c/q", "quit")
 	}
 

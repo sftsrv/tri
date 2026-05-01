@@ -49,6 +49,10 @@ func (m Model[I]) Width(width int) Model[I] {
 	return m
 }
 
+func (m Model[I]) GetWidth() int {
+	return m.width
+}
+
 // if the search is changed externally then filters need to be re-applied
 func (m Model[I]) Search(search string) Model[I] {
 	m.search = search
