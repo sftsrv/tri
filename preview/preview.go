@@ -125,7 +125,7 @@ func (m Model) View() string {
 			PaddingLeft(1).
 			PaddingRight(1).
 			Background(theme.ColorSecondary).
-			Render(strconv.Itoa(m.width)+" "+m.path),
+			Render(m.path),
 		m.viewport.View(),
 	)
 }
