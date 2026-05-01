@@ -29,6 +29,10 @@ type PreviewResultMsg struct {
 
 type PreviewReadyMsg struct{}
 
+type ResizeMsg struct {
+	Adjust int
+}
+
 func New(cmd string) Model {
 	return Model{
 		cmd: cmd,
@@ -132,7 +136,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		cmds []tea.Cmd
 	)
 
-	switch msg.(type) {
+	switch msg := msg.(type) {
+
+	case ResizeMsg:
+		m.width += msg.Adjust
+		m.viewport.Width = m.width
 
 	case tea.WindowSizeMsg:
 		if !m.ready {

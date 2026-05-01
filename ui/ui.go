@@ -3,7 +3,6 @@ package ui
 import (
 	"fmt"
 	"os"
-	"strconv"
 
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
@@ -21,8 +20,7 @@ type window struct {
 type Path string
 
 type Model struct {
-	window      window
-	splitAdjust int
+	window window
 
 	tree *tree.Tree
 
@@ -42,21 +40,15 @@ func (w *window) updateWindowSize(width int, height int) {
 	w.height = height
 }
 
-func getWidths(full int, adjust int) (int, int) {
-	pickerWidth := int(float32(full)*0.25) - 1 + adjust
-	previewWidth := full - pickerWidth - adjust
-
-	return pickerWidth, previewWidth
-
-}
-
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.window.updateWindowSize(msg.Width, msg.Height)
-		pickerWidth, previewWidth := getWidths(msg.Width, m.splitAdjust)
+
+		pickerWidth := int(float32(msg.Width)*0.25) - 1
+		previewWidth := int(float32(msg.Width)*0.75) - 1
 
 		m.pathPicker = m.pathPicker.Height(msg.Height - 1).Width(pickerWidth)
 		m.preview, cmd = m.preview.Height(msg.Height - 1).Width(previewWidth).Update(msg)
@@ -127,22 +119,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "{":
-			m.splitAdjust -= 1
-			pickerWidth, previewWidth := getWidths(m.window.width, m.splitAdjust)
+			pathPicker, pathPickerCmd := m.pathPicker.Update(picker.ResizeMsg{Adjust: -1})
+			preview, previewCmd := m.preview.Update(preview.ResizeMsg{Adjust: +1})
 
-			m.pathPicker = m.pathPicker.Width(pickerWidth)
-			m.preview = m.preview.Width(previewWidth)
+			m.pathPicker = pathPicker
+			m.preview = preview
 
-			return m, cmd
+			return m, tea.Batch(pathPickerCmd, previewCmd)
 
 		case "}":
-			m.splitAdjust += 1
-			pickerWidth, previewWidth := getWidths(m.window.width, m.splitAdjust)
+			pathPicker, pathPickerCmd := m.pathPicker.Update(picker.ResizeMsg{Adjust: +1})
+			preview, previewCmd := m.preview.Update(preview.ResizeMsg{Adjust: -1})
 
-			m.pathPicker = m.pathPicker.Width(pickerWidth)
-			m.preview = m.preview.Width(previewWidth)
+			m.pathPicker = pathPicker
+			m.preview = preview
 
-			return m, cmd
+			return m, tea.Batch(pathPickerCmd, previewCmd)
 		}
 
 	case tea.MouseMsg:
@@ -172,7 +164,6 @@ func helpView(m Model) string {
 		help += item("←", "collapse")
 		help += item("ctrk+c", "quit")
 	} else {
-		help += item("sizes", strconv.Itoa(m.window.width)+" "+strconv.Itoa(m.pathPicker.GetWidth())+" "+strconv.Itoa(m.preview.GetWidth()))
 		help += item("/", "search")
 		help += item("↓↑/jk", "navigate")
 		help += item("→/l", "expand")
