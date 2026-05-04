@@ -58,7 +58,7 @@ References in pattern are indicated with a '$' in the pattern
 
         - '$' refers to the entire match
         - '$0' (entire match), '$1' (first capture group), etc. refer to capture groups in order of capture
-        - '$<name>' or '$name' refer to named capture groups
+        - '$name' refers to named capture groups
 
 `
 

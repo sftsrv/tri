@@ -30,14 +30,8 @@ func generateCommand(base string, pattern string, input string) (bin string, arg
 				groupName = strconv.Itoa(groupIndex)
 			}
 
-			replacers := []string{
-				fmt.Sprintf("$%s", groupName),
-				fmt.Sprintf("$<%s>", groupName),
-			}
-
-			for _, replacer := range replacers {
-				result = strings.ReplaceAll(result, replacer, submatch)
-			}
+			replacer := fmt.Sprintf("$%s", groupName)
+			result = strings.ReplaceAll(result, replacer, submatch)
 		}
 	}
 
