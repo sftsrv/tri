@@ -37,11 +37,11 @@ Use Regexps to parse the input string to create more complex commands
 '''
 # viewing a formatted git log and showing the changes for each hash
 git log --pretty=format:"%h %f"
-| go run . --preview "git show $1" --pattern "^(\w+)"
+| tri --preview "git show $1" --pattern "^(\w+)"
 
 # using a more complex regexp and command
 git log --pretty=format:"%h %f"
-| go run . --preview "echo title: $title hash: $hash" --pattern "(?<hash>\w+) (?<title>.*)"
+| tri --preview "echo title: $title hash: $hash" --pattern "(?<hash>\w+) (?<title>.*)"
 '''
 
 ### Using Regexps

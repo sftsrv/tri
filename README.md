@@ -32,11 +32,11 @@ Use Regexps to parse the input string to create more complex commands
 ```
 # viewing a formatted git log and showing the changes for each hash
 git log --pretty=format:"%h %f"
-| go run . --preview "git show $1" --pattern "^(\w+)"
+| tri --preview "git show $1" --pattern "^(\w+)"
 
 # using a more complex regexp and command
 git log --pretty=format:"%h %f"
-| go run . --preview "echo title: $title hash: $hash" --pattern "(?<hash>\w+) (?<title>.*)"
+| tri --preview "echo title: $title hash: $hash" --pattern "(?<hash>\w+) (?<title>.*)"
 ```
 
 ### Using Regexps
@@ -68,7 +68,8 @@ There are a lot of smaller improvements still left, but I've been using it for s
 - [x] Print tree (using `--print` flag)
 - [x] Async/non-blocking previews
 - [x] Make splits adjustable via keybinding (resize width of file tree)
-- [ ] Allow explicit placeholder for file name in output command (like `fzf --preview "cat {}"`)
+- [x] Allow explicit placeholder for file name in output command (like how it works for)
+  - Uses Regexp for pattern definition and dynamic commands
 - [ ] Move user search input to separate thread
 - [ ] Make flat mode reactive to searching
 - [ ] Make it possible to toggle flat on and off
