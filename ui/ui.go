@@ -184,22 +184,22 @@ func (m Model) View() string {
 	)
 }
 
-func initialModel(f *tree.Tree, previewCmd string) Model {
+func initialModel(f *tree.Tree, previewCmd string, previewPattern string) Model {
 	items := tree.ToItems(f)
 
 	return Model{
 		tree:       f,
 		pathPicker: picker.New[*tree.Item]().Title("Items").Accent(theme.ColorPrimary).Items(items),
-		preview:    preview.New(previewCmd),
+		preview:    preview.New(previewCmd, previewPattern),
 	}
 }
 
-func Run(f *tree.Tree, previewCmd string, flat bool) {
+func Run(f *tree.Tree, previewCmd string, previewPattern string, flat bool) {
 	if flat {
 		f.Flatten()
 	}
 
-	m := initialModel(f, previewCmd)
+	m := initialModel(f, previewCmd, previewPattern)
 	p := tea.NewProgram(m,
 		tea.WithAltScreen(),
 		tea.WithMouseCellMotion(),

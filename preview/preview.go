@@ -1,18 +1,19 @@
 package preview
 
 import (
+	"fmt"
 	"os/exec"
-	"strconv"
-	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
+	"github.com/sftsrv/tri/command"
 	"github.com/sftsrv/tri/theme"
 )
 
 type Model struct {
 	cmd      string
+	pattern  string
 	path     string
 	ready    bool
 	width    int
@@ -33,9 +34,10 @@ type ResizeMsg struct {
 	Adjust int
 }
 
-func New(cmd string) Model {
+func New(preview string, pattern string) Model {
 	return Model{
-		cmd: cmd,
+		cmd:     preview,
+		pattern: pattern,
 	}
 }
 
@@ -47,7 +49,7 @@ func (m Model) SetPath(path string) (Model, tea.Cmd) {
 	}
 
 	m.viewport.SetContent("Loading Path: " + path)
-	active, cmd := preview(m.cmd, path, m.width)
+	active, cmd := preview(m.cmd, m.pattern, path, m.width)
 
 	m.active = active
 	return m, cmd
@@ -81,36 +83,29 @@ func (m Model) Height(height int) Model {
 	return m
 }
 
-func resolveCommand(command string, width int) (string, []string) {
-	command = strings.TrimSpace(command)
-	if len(command) > 0 {
-		parts := strings.Split(command, " ")
-		bin := parts[0]
-		args := parts[1:]
-
-		return bin, args
-	}
-
-	_, err := exec.LookPath("bat")
-	if err == nil {
-		return "bat", []string{"--color=always", "--number", "--terminal-width", strconv.Itoa(width)}
-	} else {
-		return "cat", []string{}
-	}
-}
-
-func preview(command string, path string, width int) (*exec.Cmd, tea.Cmd) {
+func preview(preview string, pattern string, path string, width int) (*exec.Cmd, tea.Cmd) {
 	if path == "" {
 		return nil, nil
 	}
 
-	bin, args := resolveCommand(command, width)
-	cmd := exec.Command(bin, append(args, path)...)
+	cmd, err := command.CreateCommand(preview, pattern, path, width)
 
 	return cmd, func() tea.Msg {
+		if err != nil {
+			return PreviewResultMsg{
+				path,
+				true,
+				fmt.Sprintf("ERROR invalid command %s: %s", path, string(err.Error())),
+			}
+		}
+
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			return PreviewResultMsg{path, true, "ERROR reading " + path + ":" + string(err.Error())}
+			return PreviewResultMsg{
+				path,
+				true,
+				fmt.Sprintf("ERROR reading %s: %s\n%s", path, string(err.Error()), string(output)),
+			}
 		}
 
 		return PreviewResultMsg{path, false, string(output)}
