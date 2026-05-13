@@ -40,7 +40,7 @@ func generateCommand(base string, pattern string, input string) (bin string, arg
 	result = strings.ReplaceAll(result, "$", input)
 
 	if result == base {
-		result = base + " " + input
+		result = strings.TrimSpace(base) + " " + input
 	}
 
 	if len(result) > 0 {
