@@ -196,7 +196,7 @@ func (m Model[I]) applyFilter() Model[I] {
 	// TODO: make this use fuzzy search again
 	m.filtered = []I{}
 	for _, item := range m.items {
-		if strings.Contains(item.Search(), m.search) {
+		if strings.Contains(strings.ToLower(item.Search()), strings.ToLower(m.search)) {
 			m.filtered = append(m.filtered, item)
 		}
 	}
@@ -274,7 +274,7 @@ func (m Model[I]) Update(msg tea.Msg) (Model[I], tea.Cmd) {
 				m.searching = false
 
 			case "enter":
-				return m, m.selectedMsg()
+				m.searching = false
 
 			case "backspace":
 				if m.search != "" {
