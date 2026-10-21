@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	lg "charm.land/lipgloss/v2"
 	"github.com/sftsrv/tri/picker"
 	"github.com/sftsrv/tri/preview"
 	"github.com/sftsrv/tri/theme"
@@ -176,14 +176,18 @@ func helpView(m Model) string {
 	return lg.NewStyle().Render(help)
 }
 
-func (m Model) View() string {
-	return lg.JoinVertical(
+func (m Model) View() tea.View {
+	v := tea.NewView(lg.JoinVertical(
 		lg.Left,
 		lg.JoinHorizontal(lg.Top, m.pathPicker.View(), m.preview.View()),
 		helpView(m),
-	)
-}
+	))
 
+	v.MouseMode = tea.MouseModeCellMotion
+	v.AltScreen = true
+
+	return v
+}
 func initialModel(f *tree.Tree, previewCmd string, previewPattern string) Model {
 	items := tree.ToItems(f)
 
@@ -200,10 +204,7 @@ func Run(f *tree.Tree, previewCmd string, previewPattern string, flat bool) {
 	}
 
 	m := initialModel(f, previewCmd, previewPattern)
-	p := tea.NewProgram(m,
-		tea.WithAltScreen(),
-		tea.WithMouseCellMotion(),
-	)
+	p := tea.NewProgram(m)
 
 	result, err := p.Run()
 	if err != nil {
